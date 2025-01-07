@@ -1,43 +1,23 @@
-# automation-podcast generator
-This project converts text material (books or articles) into an appealing podcast script and generates audio using text-to-speech APIs.
+# Automation Podcast Solution
 
-## Requirements
-1. Python 3.8+
-2. `ffmpeg` installed and added to PATH
-3. Internet connection for API calls
+This project provides an automation solution that transforms written material into an engaging podcast-style audio format. The solution uses the ElevenLabs API for text-to-speech conversion and emulates a conversational tone by generating audio for two distinct speakers.
 
-## Setup Instructions
+# Features
 
-1. Clone the Repository
-git clone <repository_url>
-cd <repository_name>
+- **Text-to-Speech Conversion**: Converts written scripts into realistic, human-like speech.
+- **Dual-Speaker Emulation**: Simulates a natural conversation between two speakers with distinct voices.
+- **Customizable Output**: Saves the output as an MP3 file for easy playback.
+- **Multi-Language Support**: Uses ElevenLabs' multilingual capabilities to generate audio in different languages (default: English).
 
-2. Create and Activate Virtual Environment
-python -m venv env
-source env/Scripts/activate  # For Git Bash or Linux
-env\Scripts\activate.bat     # For Windows CMD
+## Technologies Used
 
-4. Install Dependencies
-pip install -r requirements.txt
+- [**ElevenLabs API**](https://elevenlabs.io): For realistic text-to-speech conversion.
+- **Python**: Core programming language for script generation and audio synthesis.
+- **nltk (Natural Language Toolkit)**: For sentence tokenization to split the script into conversational dialogue.
 
-6. Install ffmpeg
-Download ffmpeg from ffmpeg.org.
-Extract and add the bin folder to the system PATH.
-Verify installation:
-ffmpeg -version
+## Prerequisites
 
-8. Set API Key
-Replace YOUR_API_KEY in podcast_generator.py with a valid API key from ElevenLabs or another TTS service.
-
-10. Run the Script
-python podcast_generator.py
-
-Output
-The script generates:
-Individual speaker audio files (e.g., speaker_a.mp3, speaker_b.mp3).
-Combined podcast file (podcast.mp3).
-
-Notes
-Ensure punkt_tab is downloaded for NLTK:
-import nltk
-nltk.download('punkt_tab')
+1. Python 3.7 or later installed on your system.
+2. An API key from [ElevenLabs](https://elevenlabs.io) (sign up and generate an API key).
+3. Install the required Python libraries:
+   pip install elevenlabs nltk

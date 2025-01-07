@@ -1,66 +1,58 @@
-import nltk
+from elevenlabs import ElevenLabs
 from nltk.tokenize import sent_tokenize
-import requests
-from pydub import AudioSegment
 
-# Step 2: Generate Script from Material
-nltk.download('punkt')
+# Initialize ElevenLabs client
+client = ElevenLabs(
+    api_key="sk_11985ec4758a076c65f86aefa5abde49d85027cca7cbd4eb"
+)
 
-def generate_script(material):
-    sentences = sent_tokenize(material)
-    script = []
-    speakers = ["Speaker A", "Speaker B"]
-    for i, sentence in enumerate(sentences):
-        script.append(f"{speakers[i % 2]}: {sentence}")
-    return "\n".join(script)
+# voice IDs for two speakers
+voice_1_id = "21m00Tcm4TlvDq8ikWAM"  
+voice_2_id = "pqHfZKP75CvOlQylNhV4"  
 
-# Step 3: Convert Script to Audio (Using ElevenLabs API)
-def synthesize_voice(text, voice_id="default", api_key="YOUR_API_KEY"):
-    url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
-    data = {"text": text, "model_id": "eleven_monolingual_v1"}
-    response = requests.post(url, json=data, headers=headers)
-    if response.status_code == 200:
-        audio_file = f"{voice_id}.mp3"
-        with open(audio_file, "wb") as file:
-            file.write(response.content)
-        return audio_file
-    else:
-        print(f"Error: {response.status_code}, {response.text}")
-        return None
+# conversational tone logic
+def generate_conversation(script):
+    sentences = sent_tokenize(script)
+    speaker_1_lines = sentences[::2]  # Odd sentences for Speaker 1
+    speaker_2_lines = sentences[1::2]  # Even sentences for Speaker 2
 
-# Combine Generated Audio Files
-def create_podcast(audio_files, output_file="podcast.mp3"):
-    podcast = AudioSegment.empty()
-    for audio_file in audio_files:
-        segment = AudioSegment.from_file(audio_file)
-        podcast += segment + AudioSegment.silent(duration=500)
-    podcast.export(output_file, format="mp3")
-    print(f"Podcast saved at {output_file}")
+    conversation = []
+    for speaker_1, speaker_2 in zip(speaker_1_lines, speaker_2_lines):
+        conversation.append((voice_1_id, speaker_1))  # Speaker 1's line
+        conversation.append((voice_2_id, speaker_2))  # Speaker 2's line
 
-# Main Function to Integrate Steps
+    if len(speaker_1_lines) > len(speaker_2_lines):
+        conversation.append((voice_1_id, speaker_1_lines[-1])) 
+
+    return conversation
+
+# Convert script to audio using ElevenLabs API
+def convert_script_to_audio(script, output_file="podcast.mp3"):
+    conversation = generate_conversation(script)
+
+    
+    with open(output_file, "wb") as f:
+        for voice_id, text in conversation:
+            audio = client.text_to_speech.convert(
+                voice_id=voice_id,
+                output_format="mp3_44100_128",
+                text=text,
+                model_id="eleven_multilingual_v2"
+            )
+            for chunk in audio:  
+                f.write(chunk)
+    print(f"Podcast saved as {output_file}")
+
+
 def main():
-    # Input Material
-    material = """Artificial intelligence is revolutionizing industries. It helps automate tasks, improve efficiency, and create innovative solutions."""
-    
-    # Generate Script
-    script = generate_script(material)
-    print("Generated Script:\n", script)
-    
-    # Divide script by speakers
-    speaker_a_text = " ".join([line.split(": ")[1] for line in script.split("\n") if line.startswith("Speaker A")])
-    speaker_b_text = " ".join([line.split(": ")[1] for line in script.split("\n") if line.startswith("Speaker B")])
-
-    # Generate audio files
-    speaker_a_audio = synthesize_voice(speaker_a_text, voice_id="speaker_a", api_key="YOUR_API_KEY")
-    speaker_b_audio = synthesize_voice(speaker_b_text, voice_id="speaker_b", api_key="YOUR_API_KEY")
-
-    # Create podcast
-    if speaker_a_audio and speaker_b_audio:
-        create_podcast([speaker_a_audio, speaker_b_audio])
+    # Example material
+    material = """
+    Welcome to our podcast! Today, we’re exploring the fascinating world of artificial intelligence.
+    Speaker 1: AI has been transforming industries worldwide.
+    Speaker 2: Absolutely, and it’s not just limited to tech; even healthcare and education are benefiting.
+    """
+    convert_script_to_audio(material)
 
 if __name__ == "__main__":
     main()
+
